@@ -21,23 +21,18 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class ColorPickerView extends View implements View.OnTouchListener {
 
     private static final int DEFAULT_RADIUS = 3;
 
     private OnColorPickedListener mOnColorPickedListener;
-
-    private Paint mShapePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private Bitmap mPickerBitmap;
 
@@ -60,14 +55,6 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         init();
     }
 
-    private void init() {
-        checkRadius();
-
-        mShapePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-
-        setOnTouchListener(this);
-    }
-
     private void initAttributes(Context context, AttributeSet attrs, int defStyleAttr) {
         TypedArray array = context.getTheme().obtainStyledAttributes(attrs,
                 R.styleable.ColorPickerView, defStyleAttr, 0);
@@ -75,6 +62,12 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         mRadius = array.getInteger(R.styleable.ColorPickerView_cpv_radius, DEFAULT_RADIUS);
 
         array.recycle();
+    }
+
+    private void init() {
+        checkRadius();
+
+        setOnTouchListener(this);
     }
 
     private void checkRadius() {
@@ -86,7 +79,7 @@ public class ColorPickerView extends View implements View.OnTouchListener {
 
         checkRadius();
         if (mPickerBitmap != null) {
-            mPickerBitmap = getRecalculatedBitmap();
+            mPickerBitmap = getPickerBitmap(mRadius);
             invalidate();
         }
     }
@@ -124,7 +117,7 @@ public class ColorPickerView extends View implements View.OnTouchListener {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        mPickerBitmap = getRecalculatedBitmap();
+        mPickerBitmap = getPickerBitmap(mRadius);
         invalidate();
     }
 
@@ -150,93 +143,31 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         return false;
     }
 
-    private Bitmap getRecalculatedBitmap() {
+    protected Bitmap getPickerBitmap(int radius) {
         int drawWidth = getWidth() - getPaddingLeft() - getPaddingRight();
         int drawHeight = getHeight() - getPaddingTop() - getPaddingBottom();
+
         int drawSize = Math.min(drawWidth, drawHeight);
 
-        int horizontalCount = mRadius * 2 - 1;
+        int horizontalCount = radius * 2 - 1;
         float shapeWidth = (drawSize / horizontalCount);
         float shapeRadius = (float) (shapeWidth / Math.sqrt(3));
 
-        List<PointF> pointsList = getPointsList(drawWidth, drawHeight, shapeWidth,
-                shapeRadius, mRadius, horizontalCount);
-
-        return getPickerBitmap(pointsList, shapeRadius);
-    }
-
-    private Bitmap getPickerBitmap(List<PointF> pointsList, float shapeRadius) {
-        int drawWidth = getWidth() - getPaddingLeft() - getPaddingRight();
-        int drawHeight = getHeight() - getPaddingTop() - getPaddingBottom();
+        List<PointF> pointsList = ColorPickerUtils.getAllShapePoints(drawWidth, drawHeight,
+                shapeWidth, shapeRadius, radius, horizontalCount);
 
         Bitmap result = Bitmap.createBitmap(drawWidth, drawHeight, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(result);
 
+        Paint shapePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        shapePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
         for (PointF point : pointsList) {
-            mShapePaint.setColor(getRandomColor());
-            canvas.drawPath(getShape(point, shapeRadius), mShapePaint);
+            shapePaint.setColor(ColorPickerUtils.getRandomColor());
+            canvas.drawPath(ColorPickerUtils.getShapePath(point, shapeRadius), shapePaint);
         }
 
         return result;
-    }
-
-    private static List<PointF> getPointsList(int drawWidth, int drawHeight, float shapeWidth, float radius, int diagonal, int count) {
-        List<PointF> pointsList = new ArrayList<>();
-
-        PointF startPoint = new PointF(drawWidth / 2 - (diagonal - 1) * shapeWidth, drawHeight / 2);
-
-        for (int i = diagonal; i < count; i++) {
-            pointsList.addAll(getPointsRow(startPoint, shapeWidth, radius, i));
-            startPoint.offset(shapeWidth / 2, 1.5f * radius);
-        }
-        for (int i = count; i >= diagonal; i--) {
-            pointsList.addAll(getPointsRow(startPoint, shapeWidth, radius, i));
-            startPoint.offset(shapeWidth, 0);
-        }
-
-        return pointsList;
-    }
-
-    private static List<PointF> getPointsRow(PointF startPoint, float shapeWidth, float radius, int count) {
-        List<PointF> pointsList = new ArrayList<>();
-
-        for (int i = 0; i < count; i++) {
-            PointF point = new PointF(startPoint.x + i * shapeWidth/2,
-                    startPoint.y - 1.5f * i * radius);
-            pointsList.add(point);
-        }
-
-        return pointsList;
-    }
-
-    private static Path getShape(PointF centerPoint, float radius) {
-        int angleJump = 60;
-
-        PointF point = getPointOnCircle(centerPoint.x, centerPoint.y, radius, 0);
-
-        Path shape = new Path();
-        shape.setFillType(Path.FillType.EVEN_ODD);
-        shape.moveTo(point.x, point.y);
-
-        for (int i = 0; i < 360; i += angleJump) {
-            point = getPointOnCircle(centerPoint.x, centerPoint.y, radius, i);
-            shape.lineTo(point.x, point.y);
-        }
-        shape.close();
-
-        return shape;
-    }
-
-    private static PointF getPointOnCircle(float x, float y, float radius, int angle) {
-        float resultX = (float) (radius * Math.cos((angle - 90) * Math.PI / 180F)) + x;
-        float resultY = (float) (radius * Math.sin((angle - 90) * Math.PI / 180F)) + y;
-
-        return new PointF(resultX, resultY);
-    }
-
-    private static int getRandomColor() {
-        Random random = new Random();
-        return Color.rgb(random.nextInt(256), random.nextInt(256), random.nextInt(256));
     }
 
 }
