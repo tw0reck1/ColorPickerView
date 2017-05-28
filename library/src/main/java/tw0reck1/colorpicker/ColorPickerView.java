@@ -21,6 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -123,15 +124,14 @@ public class ColorPickerView extends View implements View.OnTouchListener {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawBitmap(mPickerBitmap, getPaddingLeft(), getPaddingTop(), null);
+        canvas.drawBitmap(mPickerBitmap, 0, 0, null);
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (mOnColorPickedListener == null) return false;
 
-        int x = (int) event.getX() - getPaddingLeft(), y = (int) event.getY() - getPaddingTop();
-        if (x < 0 || y < 0) return false;
+        int x = (int) event.getX(), y = (int) event.getY();
 
         int color = mPickerBitmap.getPixel(x, y);
 
@@ -156,15 +156,18 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         List<PointF> pointsList = ColorPickerUtils.getAllShapePoints(drawWidth, drawHeight,
                 shapeWidth, shapeRadius, radius, horizontalCount);
 
-        Bitmap result = Bitmap.createBitmap(drawWidth, drawHeight, Bitmap.Config.ARGB_8888);
+        Bitmap result = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(result);
 
         Paint shapePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         shapePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         for (PointF point : pointsList) {
+            Path shapePath = ColorPickerUtils.getShapePath(point, shapeRadius);
+            shapePath.offset(getPaddingLeft(), getPaddingTop());
+
             shapePaint.setColor(ColorPickerUtils.getRandomColor());
-            canvas.drawPath(ColorPickerUtils.getShapePath(point, shapeRadius), shapePaint);
+            canvas.drawPath(shapePath, shapePaint);
         }
 
         return result;
