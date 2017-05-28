@@ -17,18 +17,17 @@ package tw0reck1.colorpickerview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -40,14 +39,9 @@ public class ColorPickerView extends View implements View.OnTouchListener {
 
     private Paint mShapePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
-    private HashMap<PointF, Integer> mColorMap = new HashMap<>();
-    private List<PointF> mPointsList = new ArrayList<>();
+    private Bitmap mPickerBitmap;
 
     private int mRadius = DEFAULT_RADIUS;
-
-    private float mShapeRadius;
-
-    private Point mLastRecalculationSize;
 
     public ColorPickerView(Context context) {
         super(context);
@@ -87,6 +81,20 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         if (mRadius < 1) throw new IllegalArgumentException("Radius has to be greater than 0.");
     }
 
+    public void setRadius(int radius) {
+        mRadius = radius;
+
+        checkRadius();
+        if (mPickerBitmap != null) {
+            mPickerBitmap = getRecalculatedBitmap();
+            invalidate();
+        }
+    }
+
+    public int getRadius() {
+        return mRadius;
+    }
+
     public void setOnColorPickedListener(OnColorPickedListener listener) {
         mOnColorPickedListener = listener;
     }
@@ -112,39 +120,67 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         } else height = desiredSize;
 
         setMeasuredDimension(width, height);
-        if (mLastRecalculationSize == null ||
-                width != mLastRecalculationSize.x || height != mLastRecalculationSize.y) {
-            recalculatePoints(width, height);
-            mLastRecalculationSize = new Point(width, height);
-        }
     }
 
-    private void recalculatePoints(int width, int height) {
-        int drawWidth = width - getPaddingLeft() - getPaddingRight();
-        int drawHeight = height - getPaddingTop() - getPaddingBottom();
-        int drawSize = Math.min(drawWidth, drawHeight);
-
-        int horizontalCount = mRadius * 2 - 1;
-        float shapeWidth = (drawSize / horizontalCount);
-
-        mShapeRadius = (float) (shapeWidth / Math.sqrt(3));
-        mPointsList = getPointsList(drawWidth, drawHeight, shapeWidth, mShapeRadius, mRadius, horizontalCount);
-        mColorMap.clear();
-
-        for (PointF point : mPointsList) {
-            mColorMap.put(point, getRandomColor());
-        }
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        mPickerBitmap = getRecalculatedBitmap();
+        invalidate();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        for (PointF point : mPointsList) {
-            mShapePaint.setColor(mColorMap.get(point));
-            canvas.drawPath(getShape(point, mShapeRadius), mShapePaint);
-        }
+        canvas.drawBitmap(mPickerBitmap, getPaddingLeft(), getPaddingTop(), null);
     }
 
-    private List<PointF> getPointsList(int drawWidth, int drawHeight, float shapeWidth, float radius, int diagonal, int count) {
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (mOnColorPickedListener == null) return false;
+
+        int x = (int) event.getX() - getPaddingLeft(), y = (int) event.getY() - getPaddingTop();
+        if (x < 0 || y < 0) return false;
+
+        int color = mPickerBitmap.getPixel(x, y);
+
+        if (color != Color.TRANSPARENT) {
+            mOnColorPickedListener.onColorPicked(color);
+            return true;
+        }
+
+        return false;
+    }
+
+    private Bitmap getRecalculatedBitmap() {
+        int drawWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+        int drawHeight = getHeight() - getPaddingTop() - getPaddingBottom();
+        int drawSize = Math.min(drawWidth, drawHeight);
+
+        int horizontalCount = mRadius * 2 - 1;
+        float shapeWidth = (drawSize / horizontalCount);
+        float shapeRadius = (float) (shapeWidth / Math.sqrt(3));
+
+        List<PointF> pointsList = getPointsList(drawWidth, drawHeight, shapeWidth,
+                shapeRadius, mRadius, horizontalCount);
+
+        return getPickerBitmap(pointsList, shapeRadius);
+    }
+
+    private Bitmap getPickerBitmap(List<PointF> pointsList, float shapeRadius) {
+        int drawWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+        int drawHeight = getHeight() - getPaddingTop() - getPaddingBottom();
+
+        Bitmap result = Bitmap.createBitmap(drawWidth, drawHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(result);
+
+        for (PointF point : pointsList) {
+            mShapePaint.setColor(getRandomColor());
+            canvas.drawPath(getShape(point, shapeRadius), mShapePaint);
+        }
+
+        return result;
+    }
+
+    private static List<PointF> getPointsList(int drawWidth, int drawHeight, float shapeWidth, float radius, int diagonal, int count) {
         List<PointF> pointsList = new ArrayList<>();
 
         PointF startPoint = new PointF(drawWidth / 2 - (diagonal - 1) * shapeWidth, drawHeight / 2);
@@ -161,19 +197,19 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         return pointsList;
     }
 
-    private List<PointF> getPointsRow(PointF startPoint, float shapeWidth, float radius, int count) {
+    private static List<PointF> getPointsRow(PointF startPoint, float shapeWidth, float radius, int count) {
         List<PointF> pointsList = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
-            PointF point = new PointF(getPaddingLeft() + startPoint.x + i * shapeWidth/2,
-                    getPaddingTop() + startPoint.y - 1.5f * i * radius);
+            PointF point = new PointF(startPoint.x + i * shapeWidth/2,
+                    startPoint.y - 1.5f * i * radius);
             pointsList.add(point);
         }
 
         return pointsList;
     }
 
-    private Path getShape(PointF centerPoint, float radius) {
+    private static Path getShape(PointF centerPoint, float radius) {
         int angleJump = 60;
 
         PointF point = getPointOnCircle(centerPoint.x, centerPoint.y, radius, 0);
@@ -189,29 +225,6 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         shape.close();
 
         return shape;
-    }
-
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if (mPointsList.isEmpty() || mOnColorPickedListener == null) return false;
-
-        float x = event.getX(), y = event.getY();
-
-        for (PointF point : mPointsList) {
-            if (getDistanceBetween(point.x, point.y, x, y) < mShapeRadius) {
-                mOnColorPickedListener.onColorPicked(mColorMap.get(point));
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static double getDistanceBetween(float x, float y, float x2, float y2) {
-        float xDiff = Math.abs(x - x2);
-        float yDiff = Math.abs(y - y2);
-
-        return Math.sqrt(Math.pow(xDiff, 2) + Math.pow(yDiff, 2));
     }
 
     private static PointF getPointOnCircle(float x, float y, float radius, int angle) {
