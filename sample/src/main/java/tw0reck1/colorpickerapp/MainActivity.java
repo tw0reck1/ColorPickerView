@@ -3,8 +3,8 @@ package tw0reck1.colorpickerapp;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import tw0reck1.colorpickerview.ColorPickerView;
-import tw0reck1.colorpickerview.OnColorPickedListener;
+import tw0reck1.colorpicker.ColorPickerView;
+import tw0reck1.colorpicker.OnColorPickedListener;
 
 /** @author Adrian Tworkowski */
 public class MainActivity extends AppCompatActivity implements OnColorPickedListener {

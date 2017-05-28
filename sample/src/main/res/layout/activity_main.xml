@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="tw0reck1.colorpickerapp.MainActivity">
 
-    <tw0reck1.colorpickerview.ColorPickerView
+    <tw0reck1.colorpicker.ColorPickerView
         android:id="@+id/colorview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
