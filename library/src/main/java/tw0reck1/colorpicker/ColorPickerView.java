@@ -167,6 +167,9 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         if (mOnColorPickedListener == null) return false;
 
         int x = (int) event.getX(), y = (int) event.getY();
+        if ((x < 0) || (y < 0) || (x > mPickerBitmap.getWidth()) || (y > mPickerBitmap.getHeight())) {
+            return false;
+        }
 
         int color = mPickerBitmap.getPixel(x, y);
 
@@ -194,7 +197,7 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         Bitmap result = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(result);
 
-        Paint shapePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Paint shapePaint = new Paint();
         shapePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         List<Path> shapesList = new LinkedList<>();
@@ -210,7 +213,7 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         }
 
         if (mStrokeWidth > 0) {
-            Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            Paint strokePaint = new Paint();
             strokePaint.setStyle(Paint.Style.STROKE);
             strokePaint.setStrokeWidth(mStrokeWidth);
             strokePaint.setColor(mStrokeColor);
