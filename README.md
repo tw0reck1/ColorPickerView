@@ -4,6 +4,8 @@ Custom Android View for picking colors.
 ```java
 ...
     mColorPickerView.setOnColorPickedListener(this);
+    mColorPickerView.setStrokeColor(Color.WHITE);
+    mColorPickerView.setStrokeWidth(10);
     mColorPickerView.setRadius(3); // sets the color count on radius
 }
 

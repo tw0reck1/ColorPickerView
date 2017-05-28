@@ -11,6 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="12dp"
-        app:cpv_radius="3"/>
+        app:cpv_radius="3"
+        app:cpv_stroke_width="3dp"
+        app:cpv_stroke_color="@android:color/white"/>
 
 </RelativeLayout>

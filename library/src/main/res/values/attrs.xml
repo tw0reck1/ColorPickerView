@@ -2,5 +2,7 @@
 <resources>
     <declare-styleable name="ColorPickerView">
         <attr name="cpv_radius" format="integer"/>
+        <attr name="cpv_stroke_width" format="dimension"/>
+        <attr name="cpv_stroke_color" format="color"/>
     </declare-styleable>
 </resources>

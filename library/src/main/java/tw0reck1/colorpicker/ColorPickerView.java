@@ -27,17 +27,22 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class ColorPickerView extends View implements View.OnTouchListener {
 
     private static final int DEFAULT_RADIUS = 3;
+    private static final float DEFAULT_STROKE_WIDTH = 0;
+    private static final int DEFAULT_STROKE_COLOR = Color.TRANSPARENT;
 
     private OnColorPickedListener mOnColorPickedListener;
 
     private Bitmap mPickerBitmap;
 
     private int mRadius = DEFAULT_RADIUS;
+    private float mStrokeWidth = DEFAULT_STROKE_WIDTH;
+    private int mStrokeColor = DEFAULT_STROKE_COLOR;
 
     public ColorPickerView(Context context) {
         super(context);
@@ -61,6 +66,10 @@ public class ColorPickerView extends View implements View.OnTouchListener {
                 R.styleable.ColorPickerView, defStyleAttr, 0);
 
         mRadius = array.getInteger(R.styleable.ColorPickerView_cpv_radius, DEFAULT_RADIUS);
+        mStrokeWidth = array.getDimension(R.styleable.ColorPickerView_cpv_stroke_width,
+                DEFAULT_STROKE_WIDTH);
+        mStrokeColor = array.getColor(R.styleable.ColorPickerView_cpv_stroke_color,
+                DEFAULT_STROKE_COLOR);
 
         array.recycle();
     }
@@ -87,6 +96,32 @@ public class ColorPickerView extends View implements View.OnTouchListener {
 
     public int getRadius() {
         return mRadius;
+    }
+
+    public void setStrokeWidth(float strokeWidth) {
+        mStrokeWidth = strokeWidth;
+
+        if (mPickerBitmap != null) {
+            mPickerBitmap = getPickerBitmap(mRadius);
+            invalidate();
+        }
+    }
+
+    public float getStrokeWidth() {
+        return mStrokeWidth;
+    }
+
+    public void setStrokeColor(int strokeColor) {
+        mStrokeColor = strokeColor;
+
+        if (mPickerBitmap != null) {
+            mPickerBitmap = getPickerBitmap(mRadius);
+            invalidate();
+        }
+    }
+
+    public int getStrokeColor() {
+        return mStrokeColor;
     }
 
     public void setOnColorPickedListener(OnColorPickedListener listener) {
@@ -135,7 +170,7 @@ public class ColorPickerView extends View implements View.OnTouchListener {
 
         int color = mPickerBitmap.getPixel(x, y);
 
-        if (color != Color.TRANSPARENT) {
+        if (color != Color.TRANSPARENT && color != mStrokeColor) {
             mOnColorPickedListener.onColorPicked(color);
             return true;
         }
@@ -162,12 +197,27 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         Paint shapePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         shapePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
+        List<Path> shapesList = new LinkedList<>();
+
         for (PointF point : pointsList) {
             Path shapePath = ColorPickerUtils.getShapePath(point, shapeRadius);
             shapePath.offset(getPaddingLeft(), getPaddingTop());
 
             shapePaint.setColor(ColorPickerUtils.getRandomColor());
             canvas.drawPath(shapePath, shapePaint);
+
+            shapesList.add(shapePath);
+        }
+
+        if (mStrokeWidth > 0) {
+            Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            strokePaint.setStyle(Paint.Style.STROKE);
+            strokePaint.setStrokeWidth(mStrokeWidth);
+            strokePaint.setColor(mStrokeColor);
+
+            for (Path path : shapesList) {
+                canvas.drawPath(path, strokePaint);
+            }
         }
 
         return result;
