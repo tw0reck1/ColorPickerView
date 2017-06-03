@@ -27,6 +27,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class ColorPickerView extends View implements View.OnTouchListener {
 
     private Bitmap mPickerBitmap;
 
+    private List<Integer> mColorsList = new ArrayList<>();
     private int mRadius = DEFAULT_RADIUS;
     private float mStrokeWidth = DEFAULT_STROKE_WIDTH;
     private int mStrokeColor = DEFAULT_STROKE_COLOR;
@@ -124,6 +126,16 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         return mStrokeColor;
     }
 
+    public void setColors(List<Integer> colorsList) {
+        mColorsList.clear();
+        mColorsList.addAll(colorsList);
+
+        if (mPickerBitmap != null) {
+            mPickerBitmap = getPickerBitmap(mRadius);
+            invalidate();
+        }
+    }
+
     public void setOnColorPickedListener(OnColorPickedListener listener) {
         mOnColorPickedListener = listener;
     }
@@ -167,7 +179,7 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         if (mOnColorPickedListener == null) return false;
 
         int x = (int) event.getX(), y = (int) event.getY();
-        if ((x < 0) || (y < 0) || (x > mPickerBitmap.getWidth()) || (y > mPickerBitmap.getHeight())) {
+        if ((x < 0) || (y < 0) || (x >= mPickerBitmap.getWidth()) || (y >= mPickerBitmap.getHeight())) {
             return false;
         }
 
@@ -202,11 +214,13 @@ public class ColorPickerView extends View implements View.OnTouchListener {
 
         List<Path> shapesList = new LinkedList<>();
 
-        for (PointF point : pointsList) {
-            Path shapePath = ColorPickerUtils.getShapePath(point, shapeRadius);
+        for (int i = 0; i < pointsList.size(); i++) {
+            Path shapePath = ColorPickerUtils.getShapePath(pointsList.get(i), shapeRadius);
             shapePath.offset(getPaddingLeft(), getPaddingTop());
 
-            shapePaint.setColor(ColorPickerUtils.getRandomColor());
+            shapePaint.setColor(!mColorsList.isEmpty()
+                    ? mColorsList.get(i % mColorsList.size())
+                    : ColorPickerUtils.getRandomColor());
             canvas.drawPath(shapePath, shapePaint);
 
             shapesList.add(shapePath);

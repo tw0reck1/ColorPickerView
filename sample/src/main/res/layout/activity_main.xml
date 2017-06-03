@@ -32,7 +32,7 @@
             android:layout_weight="1"
             app:cpv_radius="2"
             app:cpv_stroke_width="2dp"
-            app:cpv_stroke_color="@android:color/white"/>
+            app:cpv_stroke_color="@android:color/black"/>
 
         <tw0reck1.colorpicker.ColorPickerView
             android:id="@+id/colorview3"

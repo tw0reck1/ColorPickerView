@@ -1,8 +1,11 @@
 package tw0reck1.colorpickerapp;
 
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+
+import java.util.Arrays;
 
 import tw0reck1.colorpicker.ColorPickerView;
 import tw0reck1.colorpicker.OnColorPickedListener;
@@ -32,6 +35,10 @@ public class MainActivity extends AppCompatActivity implements OnColorPickedList
 
         colorPickerView4 = (ColorPickerView) findViewById(R.id.colorview4);
         colorPickerView4.setOnColorPickedListener(this);
+
+        colorPickerView2.setColors(Arrays.asList(
+                Color.DKGRAY, Color.WHITE, Color.WHITE, Color.GRAY, Color.DKGRAY, Color.DKGRAY, Color.WHITE
+        ));
     }
 
     @Override
