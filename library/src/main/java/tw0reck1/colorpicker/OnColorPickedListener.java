@@ -17,6 +17,8 @@ package tw0reck1.colorpicker;
 
 public interface OnColorPickedListener {
 
-    public void onColorPicked(int color);
+    void onColorTouch(int color);
+
+    void onColorClick(int color);
 
 }

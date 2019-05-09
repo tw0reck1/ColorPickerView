@@ -23,6 +23,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -40,6 +41,9 @@ public class ColorPickerView extends View implements View.OnTouchListener {
     private OnColorPickedListener mOnColorPickedListener;
 
     private Bitmap mPickerBitmap;
+
+    private final Rect mTouchArea = new Rect();
+    private Integer mPressedColor;
 
     private List<Integer> mColorsList = new ArrayList<>();
     private int mRadius = DEFAULT_RADIUS;
@@ -179,18 +183,28 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         if (mOnColorPickedListener == null) return false;
 
         int x = (int) event.getX(), y = (int) event.getY();
-        if ((x < 0) || (y < 0) || (x >= mPickerBitmap.getWidth()) || (y >= mPickerBitmap.getHeight())) {
-            return false;
-        }
+        mTouchArea.set(0, 0, mPickerBitmap.getWidth(), mPickerBitmap.getHeight());
+
+        if (!mTouchArea.contains(x, y)) return false;
 
         int color = mPickerBitmap.getPixel(x, y);
 
-        if (color != Color.TRANSPARENT && color != mStrokeColor) {
-            mOnColorPickedListener.onColorPicked(color);
-            return true;
+        if (color == Color.TRANSPARENT) return false;
+
+        mOnColorPickedListener.onColorTouch(color);
+
+        int action = event.getAction();
+        if (action == MotionEvent.ACTION_DOWN) {
+            mPressedColor = color;
+        } else if (action == MotionEvent.ACTION_UP) {
+            if (color == mPressedColor) {
+                mOnColorPickedListener.onColorClick(color);
+            }
+
+            mPressedColor = null;
         }
 
-        return false;
+        return true;
     }
 
     protected Bitmap getPickerBitmap(int radius) {

@@ -42,8 +42,11 @@ public class MainActivity extends AppCompatActivity implements OnColorPickedList
     }
 
     @Override
-    public void onColorPicked(int color) {
+    public void onColorTouch(int color) {
         mLayout.setBackgroundColor(color);
     }
+
+    @Override
+    public void onColorClick(int color) {}
 
 }
