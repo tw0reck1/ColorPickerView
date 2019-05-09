@@ -15,13 +15,11 @@
  */
 package tw0reck1.colorpicker;
 
-import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.PointF;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 class ColorPickerUtils {
 
@@ -42,6 +40,18 @@ class ColorPickerUtils {
         }
 
         return pointsList;
+    }
+
+    static int getCount(int radius) {
+        int diameter = radius * 2 - 1;
+        int count = 0;
+
+        for (int i = radius; i < diameter; i++) {
+            count += 2 * i;
+        }
+        count += diameter;
+
+        return count;
     }
 
     private static List<PointF> getShapePointsRow(PointF startPoint, float shapeWidth, float radius, int count) {
@@ -79,11 +89,6 @@ class ColorPickerUtils {
         float resultY = (float) (radius * Math.sin((angle - 90) * Math.PI / 180F)) + centerY;
 
         return new PointF(resultX, resultY);
-    }
-
-    static int getRandomColor() {
-        Random random = new Random();
-        return Color.rgb(random.nextInt(256), random.nextInt(256), random.nextInt(256));
     }
 
 }
