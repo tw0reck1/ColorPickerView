@@ -5,4 +5,9 @@
         <attr name="cpv_stroke_width" format="dimension"/>
         <attr name="cpv_stroke_color" format="color"/>
     </declare-styleable>
+    <declare-styleable name="ColorPickerSeekBar">
+        <attr name="cpsb_thumb_size" format="dimension"/>
+        <attr name="cpsb_bar_height" format="dimension"/>
+        <attr name="cpsb_bar_mask_color" format="color"/>
+    </declare-styleable>
 </resources>
