@@ -192,6 +192,10 @@ public class ColorPickerSeekBar extends View {
                 thumbX = indexOfColor * colorWidth;
             }
 
+            if (mIsDragging) {
+                mThumbPaint.setColor(0x7fffffff & mSelectedColor);
+                canvas.drawCircle(getPaddingLeft() + thumbX, getPaddingTop() + drawHeight / 2f, mThumbSize * 0.8f, mThumbPaint);
+            }
             mThumbPaint.setColor(mSelectedColor);
             canvas.drawCircle(getPaddingLeft() + thumbX, getPaddingTop() + drawHeight / 2f, mThumbSize / 2f, mThumbPaint);
         }
