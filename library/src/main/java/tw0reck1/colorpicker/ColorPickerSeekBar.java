@@ -27,12 +27,15 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class ColorPickerSeekBar extends View implements View.OnTouchListener {
+public class ColorPickerSeekBar extends View {
 
     private static final int DEFAULT_COLOR = Color.WHITE;
     private static final float DEFAULT_THUMB_SIZE = 24f;
@@ -50,6 +53,10 @@ public class ColorPickerSeekBar extends View implements View.OnTouchListener {
     private float mThumbSize = DEFAULT_THUMB_SIZE;
     private float mBarHeight = DEFAULT_BAR_HEIGHT;
     private int mBarMaskColor = DEFAULT_COLOR;
+
+    private int mScaledTouchSlop;
+    private float mTouchDownX;
+    private boolean mIsDragging;
 
     private final Paint mThumbPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
@@ -88,7 +95,7 @@ public class ColorPickerSeekBar extends View implements View.OnTouchListener {
         mThumbPaint.setStyle(Paint.Style.FILL);
         mThumbPaint.setColor(DEFAULT_COLOR);
 
-        setOnTouchListener(this);
+        mScaledTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
     }
 
     private void checkThumbSize() {
@@ -168,46 +175,134 @@ public class ColorPickerSeekBar extends View implements View.OnTouchListener {
     protected void onDraw(Canvas canvas) {
         canvas.drawBitmap(mPickerBitmap, 0, 0, null);
 
-        if (mThumbSize > 0f) {
-            mThumbPaint.setColor(mSelectedColor);
-
+        if (mThumbSize > 0f && mSelectedColor != null) {
             int drawWidth = getWidth() - getPaddingLeft() - getPaddingRight();
             int drawHeight = getHeight() - getPaddingTop() - getPaddingBottom();
 
-            float colorWidth = (float) drawWidth / mColorsList.size();
+            int colorCount = mColorsList.size();
+            boolean drawSmallerOuterColors = colorCount > 2;
+            float colorWidth = drawSmallerOuterColors ? ((float) drawWidth / (colorCount - 1))
+                    : ((float) drawWidth / colorCount);
             int indexOfColor = mColorsList.indexOf(mSelectedColor);
 
-            float thumbX = indexOfColor * colorWidth + colorWidth / 2f;
+            float thumbX = 0f;
+            if (indexOfColor == colorCount - 1) {
+                thumbX = drawWidth;
+            } else if (indexOfColor > 0) {
+                thumbX = indexOfColor * colorWidth;
+            }
 
+            mThumbPaint.setColor(mSelectedColor);
             canvas.drawCircle(getPaddingLeft() + thumbX, getPaddingTop() + drawHeight / 2f, mThumbSize / 2f, mThumbPaint);
         }
     }
 
     @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if (mOnColorPickedListener == null) return false;
+    public boolean onTouchEvent(MotionEvent event) {
+        if (!isEnabled()) return false;
 
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                if (isInScrollingContainer()) {
+                    mTouchDownX = event.getX();
+                } else {
+                    startDrag(event);
+                }
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                if (mIsDragging) {
+                    trackTouchEvent(event);
+                } else {
+                    final float x = event.getX();
+                    if (Math.abs(x - mTouchDownX) > mScaledTouchSlop) {
+                        startDrag(event);
+                    }
+                }
+                break;
+
+            case MotionEvent.ACTION_UP:
+                if (mIsDragging) {
+                    trackTouchEvent(event);
+                    onStopTrackingTouch();
+                    setPressed(false);
+                } else {
+                    onStartTrackingTouch();
+                    trackTouchEvent(event);
+                    onStopTrackingTouch();
+                }
+                invalidate();
+                break;
+
+            case MotionEvent.ACTION_CANCEL:
+                if (mIsDragging) {
+                    onStopTrackingTouch();
+                    setPressed(false);
+                }
+                invalidate();
+                break;
+        }
+        return true;
+    }
+
+    private boolean isInScrollingContainer() {
+        ViewParent p = getParent();
+        while (p instanceof ViewGroup) {
+            if (((ViewGroup) p).shouldDelayChildPressedState()) {
+                return true;
+            }
+            p = p.getParent();
+        }
+        return false;
+    }
+
+    private void startDrag(MotionEvent event) {
+        setPressed(true);
+
+        invalidate();
+
+        onStartTrackingTouch();
+        trackTouchEvent(event);
+        attemptClaimDrag();
+    }
+
+    private void trackTouchEvent(MotionEvent event) {
         Integer color = null;
-        int x = (int) event.getX();
+        final int x = Math.round(event.getX());
         for (int i = 0; i < mTouchRanges.size(); i++) {
             if (x <= mTouchRanges.get(i)) {
                 color = mColorsList.get(i);
                 break;
             }
         }
-        if (color == null) return false;
 
-        mOnColorPickedListener.onColorTouch(color);
+        mSelectedColor = color;
+        invalidate();
 
-        int action = event.getAction();
-        if (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_MOVE) {
-            mSelectedColor = color;
-            invalidate();
-        } else if (action == MotionEvent.ACTION_UP) {
-            mOnColorPickedListener.onColorClick(mSelectedColor);
+        if (mOnColorPickedListener != null && color != null) {
+            if (event.getAction() == MotionEvent.ACTION_DOWN ||
+                    event.getAction() == MotionEvent.ACTION_MOVE ||
+                    event.getAction() == MotionEvent.ACTION_UP) {
+                mOnColorPickedListener.onColorTouch(color);
+            }
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                mOnColorPickedListener.onColorClick(color);
+            }
         }
+    }
 
-        return true;
+    private void attemptClaimDrag() {
+        if (getParent() != null) {
+            getParent().requestDisallowInterceptTouchEvent(true);
+        }
+    }
+
+    void onStartTrackingTouch() {
+        mIsDragging = true;
+    }
+
+    void onStopTrackingTouch() {
+        mIsDragging = false;
     }
 
     private void fillWithRandomColors() {
@@ -229,7 +324,9 @@ public class ColorPickerSeekBar extends View implements View.OnTouchListener {
         float barBottom = getPaddingBottom() + drawHeight / 2f - mBarHeight / 2f;
 
         int colorCount = mColorsList.size();
-        float colorWidth = ((float) drawWidth / colorCount);
+        boolean drawSmallerOuterColors = colorCount > 2;
+        float colorWidth = drawSmallerOuterColors ? ((float) drawWidth / (colorCount - 1))
+                : ((float) drawWidth / colorCount);
 
         Bitmap result = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(result);
@@ -238,20 +335,27 @@ public class ColorPickerSeekBar extends View implements View.OnTouchListener {
         shapePaint.setColor(mBarMaskColor);
         shapePaint.setStyle(Paint.Style.FILL);
 
+        float barStart = getPaddingLeft();
+        float barEnd = getPaddingLeft() + drawWidth;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            canvas.drawRoundRect(getPaddingLeft(), barTop,
-                    getPaddingLeft() + drawWidth, barBottom, mBarHeight / 2f, mBarHeight / 2f, shapePaint);
+            canvas.drawRoundRect(barStart, barTop, barEnd, barBottom,
+                    mBarHeight / 2f, mBarHeight / 2f, shapePaint);
         } else {
-            canvas.drawRect(getPaddingLeft(), barTop,
-                    getPaddingLeft() + drawWidth, barBottom, shapePaint);
+            canvas.drawRect(barStart, barTop, barEnd, barBottom, shapePaint);
         }
 
-        for (int i = 0; i < mColorsList.size(); i++) {
-            shapePaint.setColor(mColorsList.get(i % mColorsList.size()));
+        for (int i = 0; i < colorCount; i++) {
+            shapePaint.setColor(mColorsList.get(i % colorCount));
             shapePaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.MULTIPLY));
 
-            canvas.drawRect(getPaddingLeft() + i * colorWidth, barTop,
-                    getPaddingLeft() + (i + 1) * colorWidth, barBottom, shapePaint);
+            if (drawSmallerOuterColors && (i == 0 || i == colorCount - 1)) {
+                barEnd = barStart + colorWidth / 2f;
+                canvas.drawRect(barStart, barTop, barEnd, barBottom, shapePaint);
+            } else {
+                barEnd = barStart + colorWidth;
+                canvas.drawRect(barStart, barTop, barEnd, barBottom, shapePaint);
+            }
+            barStart = barEnd;
         }
 
         return result;
@@ -264,11 +368,14 @@ public class ColorPickerSeekBar extends View implements View.OnTouchListener {
         if (colorCount < 1) return;
 
         int drawWidth = getWidth() - getPaddingLeft() - getPaddingRight();
-        float colorWidth = ((float) drawWidth / colorCount);
-        float colorEnd = getPaddingLeft() + colorWidth;
+        boolean drawSmallerOuterColors = colorCount > 2;
+        float colorWidth = drawSmallerOuterColors ? ((float) drawWidth / (colorCount - 1))
+                : ((float) drawWidth / colorCount);
+
+        float colorEnd = getPaddingLeft() + (drawSmallerOuterColors ? colorWidth / 2f : colorWidth);
         for (int i = 0; i < colorCount - 1; i++) {
             mTouchRanges.add(Math.round(colorEnd + i * colorWidth));
         }
-        mTouchRanges.add(getWidth());
+        mTouchRanges.add(Integer.MAX_VALUE);
     }
 }
