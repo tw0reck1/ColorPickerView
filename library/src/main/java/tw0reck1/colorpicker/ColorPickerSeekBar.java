@@ -173,7 +173,9 @@ public class ColorPickerSeekBar extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawBitmap(mPickerBitmap, 0, 0, null);
+        if (mPickerBitmap != null) {
+            canvas.drawBitmap(mPickerBitmap, 0, 0, null);
+        }
 
         if (mThumbSize > 0f && mSelectedColor != null) {
             int drawWidth = getWidth() - getPaddingLeft() - getPaddingRight();
@@ -321,8 +323,13 @@ public class ColorPickerSeekBar extends View {
     }
 
     private Bitmap getPickerBitmap() {
-        int drawWidth = getWidth() - getPaddingLeft() - getPaddingRight();
-        int drawHeight = getHeight() - getPaddingTop() - getPaddingBottom();
+        int width = getWidth();
+        int height = getHeight();
+
+        if (width <= 0 || height <= 0) return null;
+
+        int drawWidth = width - getPaddingLeft() - getPaddingRight();
+        int drawHeight = height - getPaddingTop() - getPaddingBottom();
 
         float barTop = getPaddingTop() + drawHeight / 2f + mBarHeight / 2f;
         float barBottom = getPaddingBottom() + drawHeight / 2f - mBarHeight / 2f;
@@ -332,7 +339,7 @@ public class ColorPickerSeekBar extends View {
         float colorWidth = drawSmallerOuterColors ? ((float) drawWidth / (colorCount - 1))
                 : ((float) drawWidth / colorCount);
 
-        Bitmap result = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(result);
 
         Paint shapePaint = new Paint(Paint.ANTI_ALIAS_FLAG);

@@ -198,7 +198,9 @@ public class ColorPickerView extends View implements View.OnTouchListener {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        canvas.drawBitmap(mPickerBitmap, 0, 0, null);
+        if (mPickerBitmap != null) {
+            canvas.drawBitmap(mPickerBitmap, 0, 0, null);
+        }
     }
 
     @Override
@@ -286,8 +288,13 @@ public class ColorPickerView extends View implements View.OnTouchListener {
     }
 
     protected Bitmap getColorBitmap(int radius) {
-        int drawWidth = getWidth() - getPaddingLeft() - getPaddingRight();
-        int drawHeight = getHeight() - getPaddingTop() - getPaddingBottom();
+        int width = getWidth();
+        int height = getHeight();
+
+        if (width <= 0 || height <= 0) return null;
+
+        int drawWidth = width - getPaddingLeft() - getPaddingRight();
+        int drawHeight = height - getPaddingTop() - getPaddingBottom();
 
         int drawSize = Math.min(drawWidth, drawHeight);
 
@@ -298,7 +305,7 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         List<PointF> pointsList = ColorPickerUtils.getAllShapePoints(drawWidth, drawHeight,
                 shapeWidth, shapeRadius, radius, horizontalCount);
 
-        Bitmap result = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(result);
 
         Paint shapePaint = new Paint();
