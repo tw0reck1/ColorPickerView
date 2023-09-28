@@ -33,6 +33,7 @@ import android.view.ViewParent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class ColorPickerSeekBar extends View {
@@ -270,11 +271,11 @@ public class ColorPickerSeekBar extends View {
     private void startDrag(MotionEvent event) {
         setPressed(true);
 
-        invalidate();
-
         onStartTrackingTouch();
         trackTouchEvent(event);
         attemptClaimDrag();
+
+        invalidate();
     }
 
     private void trackTouchEvent(MotionEvent event) {
@@ -287,8 +288,10 @@ public class ColorPickerSeekBar extends View {
             }
         }
 
-        mSelectedColor = color;
-        invalidate();
+        if (!Objects.equals(color, mSelectedColor)) {
+            mSelectedColor = color;
+            invalidate();
+        }
 
         if (mOnColorPickedListener != null && color != null) {
             if (event.getAction() == MotionEvent.ACTION_DOWN ||
