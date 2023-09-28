@@ -98,10 +98,12 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         checkRadius();
 
         if (mPickerBitmap != null) {
+            mPickerBitmap.recycle();
             mPickerBitmap = getPickerBitmap(mRadius);
             invalidate();
         }
         if (mColorBitmap != null) {
+            mColorBitmap.recycle();
             mColorBitmap = getColorBitmap(mRadius);
             invalidate();
         }
@@ -115,10 +117,12 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         mStrokeWidth = strokeWidth;
 
         if (mPickerBitmap != null) {
+            mPickerBitmap.recycle();
             mPickerBitmap = getPickerBitmap(mRadius);
             invalidate();
         }
         if (mColorBitmap != null) {
+            mColorBitmap.recycle();
             mColorBitmap = getColorBitmap(mRadius);
             invalidate();
         }
@@ -132,10 +136,12 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         mStrokeColor = strokeColor;
 
         if (mPickerBitmap != null) {
+            mPickerBitmap.recycle();
             mPickerBitmap = getPickerBitmap(mRadius);
             invalidate();
         }
         if (mColorBitmap != null) {
+            mColorBitmap.recycle();
             mColorBitmap = getColorBitmap(mRadius);
             invalidate();
         }
@@ -150,10 +156,12 @@ public class ColorPickerView extends View implements View.OnTouchListener {
         mColorsList.addAll(colorsList);
 
         if (mPickerBitmap != null) {
+            mPickerBitmap.recycle();
             mPickerBitmap = getPickerBitmap(mRadius);
             invalidate();
         }
         if (mColorBitmap != null) {
+            mColorBitmap.recycle();
             mColorBitmap = getColorBitmap(mRadius);
             invalidate();
         }
@@ -192,7 +200,13 @@ public class ColorPickerView extends View implements View.OnTouchListener {
             fillWithRandomColors();
         }
 
+        if (mPickerBitmap != null) {
+            mPickerBitmap.recycle();
+        }
         mPickerBitmap = getPickerBitmap(mRadius);
+        if (mColorBitmap != null) {
+            mColorBitmap.recycle();
+        }
         mColorBitmap = getColorBitmap(mRadius);
     }
 

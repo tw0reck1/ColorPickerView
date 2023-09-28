@@ -120,6 +120,7 @@ public class ColorPickerSeekBar extends View {
         mBarHeight = barHeight;
         checkBarHeight();
         if (mPickerBitmap != null) {
+            mPickerBitmap.recycle();
             mPickerBitmap = getPickerBitmap();
             invalidate();
         }
@@ -141,6 +142,7 @@ public class ColorPickerSeekBar extends View {
         mSelectedColor = colorsList.get(0);
 
         if (mPickerBitmap != null) {
+            mPickerBitmap.recycle();
             mPickerBitmap = getPickerBitmap();
             validateTouchRanges();
             invalidate();
@@ -167,6 +169,9 @@ public class ColorPickerSeekBar extends View {
             fillWithRandomColors();
         }
 
+        if (mPickerBitmap != null) {
+            mPickerBitmap.recycle();
+        }
         mPickerBitmap = getPickerBitmap();
         validateTouchRanges();
     }
