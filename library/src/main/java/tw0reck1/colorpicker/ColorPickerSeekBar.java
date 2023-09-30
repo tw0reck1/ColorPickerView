@@ -339,8 +339,8 @@ public class ColorPickerSeekBar extends View {
         int drawWidth = width - getPaddingLeft() - getPaddingRight();
         int drawHeight = height - getPaddingTop() - getPaddingBottom();
 
-        float barTop = getPaddingTop() + drawHeight / 2f + mBarHeight / 2f;
-        float barBottom = getPaddingBottom() + drawHeight / 2f - mBarHeight / 2f;
+        float barTop = getPaddingTop() + drawHeight / 2f - mBarHeight / 2f;
+        float barBottom = getPaddingBottom() + drawHeight / 2f + mBarHeight / 2f;
 
         int colorCount = mColorsList.size();
         boolean drawSmallerOuterColors = colorCount > 2;
