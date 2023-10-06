@@ -15,7 +15,7 @@
         android:layout_weight="2"
         android:padding="12dp"
         app:cpv_radius="4"
-        app:cpv_stroke_width="3dp"
+        app:cpv_stroke_width="6dp"
         app:cpv_stroke_color="@android:color/white"/>
 
     <LinearLayout
@@ -44,14 +44,37 @@
 
     </LinearLayout>
 
-    <tw0reck1.colorpicker.ColorPickerView
+    <tw0reck1.colorpicker.ColorPickerSeekBar
         android:id="@+id/colorview4"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="12dp"
-        app:cpv_radius="4"
-        app:cpv_stroke_width="3dp"
-        app:cpv_stroke_color="@android:color/white"/>
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginTop="24dp"
+        android:padding="6.4dp"
+        app:cpsb_thumb_size="8dp"
+        app:cpsb_bar_height="4dp"
+        app:cpsb_bar_mask_color="@android:color/white"/>
+
+    <tw0reck1.colorpicker.ColorPickerSeekBar
+        android:id="@+id/colorview5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="30dp"
+        android:layout_marginVertical="12dp"
+        android:padding="16dp"
+        app:cpsb_thumb_size="20dp"
+        app:cpsb_bar_height="10dp"
+        app:cpsb_bar_mask_color="#7fffffff"/>
+
+    <tw0reck1.colorpicker.ColorPickerSeekBar
+        android:id="@+id/colorview6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="48dp"
+        android:layout_marginBottom="24dp"
+        android:padding="12.8dp"
+        app:cpsb_thumb_size="16dp"
+        app:cpsb_bar_height="24dp"
+        app:cpsb_bar_mask_color="#3fffffff"/>
 
 </LinearLayout>

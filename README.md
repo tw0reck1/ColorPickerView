@@ -15,18 +15,18 @@ Declaring view in layout:
 Setup code:
 ```java
 ...
-    mColorPickerView = (ColorPickerView) findViewById(R.id.colorpickerview);
-    mColorPickerView.setOnColorPickedListener(this);
-    mColorPickerView.setColors(Arrays.asList(
+    colorPickerView = (ColorPickerView) findViewById(R.id.colorpickerview);
+    colorPickerView.setOnColorPickedListener(this);
+    colorPickerView.setColors(Arrays.asList(
             Color.DKGRAY, Color.WHITE, Color.WHITE, Color.GRAY, Color.DKGRAY, Color.DKGRAY, Color.WHITE
     ));
 }
 
 @Override
 public void onColorPicked(int color) {
-    mColorPickerView.setBackgroundColor(color);
+    colorPickerView.setBackgroundColor(color);
 }
 ```
-![Sample](sample.png)
+![Sample](sample.jpg)
 ### Samples
-![Screenshot](screenshot.png)
+![Screenshot](screenshot.jpg)
