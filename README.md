@@ -13,19 +13,26 @@ Declaring view in layout:
         app:cpv_stroke_color="@android:color/black"/>
 ```
 Setup code:
-```java
+```kotlin
 ...
-    colorPickerView = (ColorPickerView) findViewById(R.id.colorpickerview);
-    colorPickerView.setOnColorPickedListener(this);
-    colorPickerView.setColors(Arrays.asList(
-            Color.DKGRAY, Color.WHITE, Color.WHITE, Color.GRAY, Color.DKGRAY, Color.DKGRAY, Color.WHITE
-    ));
+    val colorPickerView = findViewById<ColorPickerView>(R.id.colorpickerview)
+    colorPickerView.setOnColorPickListener(this)
+    colorPickerView.setColors(
+        listOf(
+            Color.DKGRAY,
+            Color.WHITE,
+            Color.WHITE,
+            Color.GRAY,
+            Color.DKGRAY,
+            Color.DKGRAY,
+            Color.WHITE
+        )
+    )
 }
 
-@Override
-public void onColorPicked(int color) {
-    colorPickerView.setBackgroundColor(color);
-}
+    override fun onColorPick(color: Int) {
+        colorPickerView.setBackgroundColor(color)
+    }
 ```
 ![Sample](sample.jpg)
 ### Samples
