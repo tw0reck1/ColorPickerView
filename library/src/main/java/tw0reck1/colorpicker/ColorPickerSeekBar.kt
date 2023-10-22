@@ -148,6 +148,8 @@ class ColorPickerSeekBar : View {
         invalidate()
     }
 
+    fun getSelectedColor(): Int = requireNotNull(selectedColor)
+
     fun setColors(colorsList: List<Int>) {
         this.colorsList.clear()
         this.colorsList.addAll(colorsList)
