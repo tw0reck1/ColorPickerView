@@ -361,6 +361,7 @@ class ColorPickerSeekBar : View {
                 Random.nextInt(256)
             )
         }
+        colorsList.addAll(colors)
         selectedColor = colors[0]
     }
 
