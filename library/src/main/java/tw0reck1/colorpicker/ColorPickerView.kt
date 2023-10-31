@@ -186,7 +186,7 @@ class ColorPickerView : View, OnTouchListener {
 
     override fun onDraw(canvas: Canvas) {
         pickerBitmap?.let { bitmap ->
-            canvas.drawBitmap(bitmap, paddingLeft.toFloat(), paddingTop.toFloat(), null)
+            canvas.drawBitmap(bitmap, 0f, 0f, null)
         }
     }
 

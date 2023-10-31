@@ -15,20 +15,20 @@ Declaring view in layout:
 Setup code:
 ```kotlin
 ...
-    val colorPickerView = findViewById<ColorPickerView>(R.id.colorpickerview)
-    colorPickerView.setOnColorPickListener(this)
-    colorPickerView.setColors(
-        listOf(
-            Color.DKGRAY,
-            Color.WHITE,
-            Color.WHITE,
-            Color.GRAY,
-            Color.DKGRAY,
-            Color.DKGRAY,
-            Color.WHITE
+        val colorPickerView = findViewById<ColorPickerView>(R.id.colorpickerview)
+        colorPickerView.setOnColorPickListener(this)
+        colorPickerView.setColors(
+            listOf(
+                Color.DKGRAY,
+                Color.WHITE,
+                Color.WHITE,
+                Color.GRAY,
+                Color.DKGRAY,
+                Color.DKGRAY,
+                Color.WHITE
+            )
         )
-    )
-}
+    }
 
     override fun onColorPick(color: Int) {
         colorPickerView.setBackgroundColor(color)
